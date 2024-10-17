@@ -21,9 +21,10 @@ mongoose.connect(process.env.MONGODB_URI,  
 const app = express();
 const port = process.env.PORT || 5000;
 
-// API routes
+app.use(express.json()); // Middleware to parse JSON request bodies
 
-app.use(routes)
+// API routes
+app.use(routes);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
