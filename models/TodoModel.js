@@ -1,8 +1,8 @@
-const moongoose = require ('monggose')
+const mongoose = require('mongoose');
 
-const todoSchema = new moongoose.Schema({
+const todoSchema = new mongoose.Schema({
     text : {
-        type: string,
+        type: String,
         require: true
     }
 })
