@@ -1,1 +1,4 @@
 /node_modules
+
+# Jangan track file .env
+.env
