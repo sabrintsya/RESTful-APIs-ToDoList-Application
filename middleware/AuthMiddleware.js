@@ -17,7 +17,7 @@ module.exports = {
     }
 
     try {
-      const payload = jwt.verify(token, process.env.JWT);
+      const payload = jwt.verify(token, process.env.JWT_KEY);
 
       req.payload = payload;
       next();
@@ -34,4 +34,3 @@ module.exports = {
     next();
   },
 };
-

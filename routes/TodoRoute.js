@@ -1,19 +1,14 @@
-const { Router } = require("express");
+const express = require("express");
 const { validateToken, checkRole } = require("../middleware/AuthMiddleware");
+const { getAllTodo, getTodoById, addTodo, editTodoById, deleteTodoById, deleteAllTodo } = require("../controllers/TodoController")
 
-const { getTodo, saveTodo, updateTodo, deleteTodo,deleteAllTodo, getAllTodo, createTodo} = require("../controllers/TodoController");
-const { login, register } = require("../controllers/AuthController");
+const router = express.Router();
 
-const router = Router();
-
-router.get('/', getTodo); // This will handle GET requests at the root of this route
-router.get('/', getAllTodo);
-router.post("/regis", register);
-router.post("/login", login);
-router.post('/createTodo', validateToken, createTodo);
-router.post('/save', validateToken , saveTodo); // This will handle POST requests to /save
-router.post('/update', validateToken, updateTodo); // This will handle POST requests to /update
-router.delete('/', validateToken, checkRole, deleteAllTodo);
-router.delete('/:id', validateToken, checkRole, deleteTodo);// This will handle POST requests to /delete
+router.get("/", getAllTodo);
+router.get("/:id", getTodoById);
+router.post("/", validateToken, addTodo);
+router.put("/:id", validateToken, editTodoById);
+router.delete("/:id", validateToken, checkRole, deleteTodoById);
+router.delete("/", validateToken, checkRole, deleteAllTodo);
 
 module.exports = router;

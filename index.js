@@ -1,36 +1,29 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const routes = require('./routes/TodoRoute');
-const userRoutes = require('./routes/UserRoute');
-const authRoutes = require('./routes/AuthRoute');
+const express = require("express");
+const mongoose = require("mongoose");
 
-dotenv.config();
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch(err => {
-  console.error('Error connecting to MongoDB:', err);
-});
 
 const app = express();
-const port = process.env.PORT || 5001;
 
-app.use(express.json()); // Middleware to parse JSON request bodies
+const PORT = process.env.PORT || 3000;
+const MONGODB_URL = process.env.MONGODB_URL;
+console.log(MONGODB_URL);
+const db = mongoose.connect(MONGODB_URL);
+
+const allRoutes = require("./routes/app");
+
+db.then(() => {
+  console.log("berhasil connect ke server");
+}).catch(() => {
+  console.log("gagal connect ke server");
+});
+require('dotenv').config();
 
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+app.use(express.json());
+app.use(allRoutes);
+
+app.listen(PORT, () => {
+  console.log("server running on PORT " + 3000);
 });
 
-app.use(routes);
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
-
-app.use("/api/users", userRoutes);
-app.use("/api/auth", authRoutes);
+module.exports = db;

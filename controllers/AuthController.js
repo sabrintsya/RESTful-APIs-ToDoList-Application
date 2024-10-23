@@ -1,46 +1,60 @@
-const User = require('../models/TodoUser');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+require("dotenv").config();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-exports.register = async (req, res) => {
-    const { username, password } = req.body;
+const User = require("../models/TodoUser");
 
-    try {
-        // Check if the user already exists
-        const existingUser  = await User.findOne({ username });
-        if (existingUser ) {
-            return res.status(400).send('User sudah ada disana');
-        }
+module.exports = {
+  regis: async (req, res) => {
+    const data = req.body;
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword });
-        
-        // Save the user
-        await user.save();
-        res.status(201).send('User daftar success');
-    } catch (error) {
-        console.error("Error registering user:", error);
-        res.status(500).send('Error saat user daftar');
-    }
-};
-
-exports.login = async (req, res) => {
-    const { username, password } = req.body;
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(data.password, salt);
+    data.password = hash;
 
     try {
-        const user = await User.findOne({ username });
-        if (!user) return res.status(400).send('User tidak ditemukan');
+      const isUserThere = await User.findOne({ email: data.email }).exec();
 
-        // Validate password
-        const validPassword = await bcryptjs.compare(password, user.password);
-        if (!validPassword) return res.status(400).send('Password Salah');
+      if (isUserThere !== null) {
+        return res.status(400).json({ message: "Email sudah terdaftar" });
+      } else {
+        const newUser = new User(data);
+        newUser.save();
 
-        // Generate token with expiration
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.header('Authorization', token).send({ token });
+        res.status(201).json({
+          message: "berhasil daftar",
+        });
+      }
     } catch (error) {
-        console.error("Error saat user login:", error);
-        res.status(500).send('Error saat user login');
+      res.status(500).json({ message: "Error" });
     }
+  },
+  login: async (req, res) => {
+    const data = req.body;
+
+    const user = await User.findOne({ email: data.email }).exec();
+    if (!user) {
+      res.status(404).json({ message: "tidak ada email terdaftar" });
+      return;
+    }
+
+    const checkPassword = bcrypt.compareSync(data.password, user.password);
+    if (!checkPassword) {
+      res.status(401).json({ message: "password yang diberikan salah" });
+      return;
+    }
+
+    const token = jwt.sign(
+      {
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_KEY
+    );
+
+    res.status(200).json({
+      message: "berhasil masuk",
+      token,
+    });
+  },
 };
